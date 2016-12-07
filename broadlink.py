@@ -1,4 +1,3 @@
-import logging
 
 from homeassistant.helpers.entity import Entity
 import voluptuous as vol
