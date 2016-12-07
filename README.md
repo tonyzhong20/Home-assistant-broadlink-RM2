@@ -15,9 +15,9 @@ Put the following config to ~/.homeassistant/configuration.yaml
 ```
 remote:
 - platform: broadlink
-    host: '192.168.1.126'
-    port: 80
-    mac : '59f9ee0d43b4'
+  host: ''
+  port: 80
+  mac : ''
 ```    
 Put the code under ~/.homeassistant/custom_components/remote
 
