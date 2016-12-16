@@ -1,5 +1,6 @@
 
 from homeassistant.helpers.entity import Entity
+from homeassistant.const import TEMP_FAHRENHEIT
 import voluptuous as vol
 import homeassistant.components.remote as remote
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_PASSWORD
@@ -82,11 +83,20 @@ class BroadlinkRemote(Entity):
 
     @property
     def state(self):
-        return "ok"
+        return self._state
 
     @property
     def ip(self):
         return self._ip
+    @property
+    def unit_of_measurement(self):
+        """Return the unit of measurement."""
+        return TEMP_FAHRENHEIT
+
+    def update(self):
+        if(self._device):
+            slef._device.auth()
+            self._state = round(self._device.check_temperature()* 1.8 + 32, 2)
 
     def learn(self, command_name):
         import codecs
@@ -109,12 +119,4 @@ class BroadlinkRemote(Entity):
 
     def call(self, command_name):
         import codecs
-        
         self._device.send_data(codecs.decode(self._commands[command_name],"hex"))
-
-    def update(self):
-        a = 1
-        """Fetch new state data for this light.
-
-        This is the only method that should fetch new data for Home Assistant.
-        """
