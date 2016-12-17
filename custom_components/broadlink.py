@@ -17,7 +17,14 @@ CONFIG_SCHEMA =  vol.Schema({
 
 DATA_BROADLINK = 'broadlink'
 
+SERVICE_LEARN = 'broadlink_learn'
+SERVICE_SCHEMA = vol.Schema({
+    vol.Required('commandName'): cv.string,
+})
+
 _LOGGER = logging.getLogger(__name__)
+
+SWITCH_PREFIX = 'switch'
 
 def setup(hass, config):
     conf = config[DOMAIN]
@@ -30,13 +37,20 @@ def setup(hass, config):
     hass.data[DATA_BROADLINK]  = BroadlinkRM2(host,port,mac,conf_file)
 
     _LOGGER.debug("proceeding with discovery")
-    #discovery.load_platform(hass, 'remote', DOMAIN, {}, config)
+    discovery.load_platform(hass, 'remote', DOMAIN, {}, config)
     discovery.load_platform(hass, 'sensor', DOMAIN, {}, config)
     discovery.load_platform(hass, 'switch', DOMAIN, {}, config)
+
+    hass.services.register(DOMAIN, SERVICE_LEARN, _learn_service,schema=SERVICE_SCHEMA)
+
     _LOGGER.debug("setup done")
 
     return True
 
+def _learn_service(service):
+    command_name = service.data.get('commandName')
+    if(command_name != None and command_name !=""):
+        hass.data[DATA_BROADLINK].learn(command_name)
 
 
 class BroadlinkRM2(object):
@@ -64,10 +78,14 @@ class BroadlinkRM2(object):
             return round(self._device.check_temperature()* 1.8 + 32, 2)
 
     def get_switch_devices(self):
-        if('switchList' in self._commands):
-          return self._commands['switchList']
-        else:
-          return []
+        devices = []
+        for device in self._commands:
+            if(device.find(SWITCH_PREFIX)==0):
+                device = device.split("_")
+                device.remove(SWITCH_PREFIX)
+                device = " ".join(device)
+                devices.extend([device])
+        return devices
 
     def learn(self, command_name):
         import codecs
@@ -88,6 +106,8 @@ class BroadlinkRM2(object):
         commands_file.write(json.dumps(self._commands))
         commands_file.close()
 
-    def call(self, command_name):
+    def call(self, command_name,isSwitch=False):
         import codecs
+        if(isSwitch):
+            command_name = '{}_{}'.format(SWITCH_PREFIX,command_name)
         self._device.send_data(codecs.decode(self._commands[command_name],"hex"))

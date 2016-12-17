@@ -1,0 +1,61 @@
+homeassistant:
+  # Name of the location where Home Assistant is running
+  name: Home
+  # Location required to calculate the time the sun rises and sets
+  latitude: 37.3501
+  longitude: -121.9854
+  # Impacts weather/sunrise data (altitude above sea level in meters)
+  elevation: 28
+  # metric for Metric, imperial for Imperial
+  unit_system: imperial
+  # Pick yours from here: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  time_zone: America/Los_Angeles
+
+# Show links to resources in log and frontend
+introduction:
+
+# Enables the frontend
+frontend:
+
+http:
+  # Uncomment this to add a password (recommended!)
+  # api_password: PASSWORD
+
+# Checks for available updates
+updater:
+
+# Discover some devices automatically
+discovery:
+
+# Allows you to issue voice commands from the frontend in enabled browsers
+conversation:
+
+# Enables support for tracking state changes over time.
+history:
+
+# View all events in a logbook
+logbook:
+
+emulated_hue:
+
+# Track the sun
+sun:
+
+broadlink:
+    host: '192.168.1.126'
+    port: 80
+    mac : '59f9ee0d43b4'
+
+# Weather Prediction
+sensor:
+  - platform: yr
+  - platform: broadlink
+
+switch:
+  - platform: broadlink
+
+# remote:
+#   - platform: broadlink
+#     host: '192.168.1.126'
+#     port: 80
+#     mac : '59f9ee0d43b4'
