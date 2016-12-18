@@ -17,13 +17,6 @@ CONFIG_SCHEMA =  vol.Schema({
 
 DATA_BROADLINK = 'broadlink'
 
-SERVICE_LEARN = 'broadlink_learn'
-SERVICE_SCHEMA = vol.Schema({
-    vol.Required('device'): cv.string,
-    vol.Optional('commandName'): cv.string,
-    vol.Optional('count'): cv.string,
-})
-
 _LOGGER = logging.getLogger(__name__)
 
 SWITCH_PREFIX = 'switch'
@@ -42,17 +35,9 @@ def setup(hass, config):
     discovery.load_platform(hass, 'sensor', DOMAIN, {}, config)
     discovery.load_platform(hass, 'switch', DOMAIN, {}, config)
 
-    hass.services.register(DOMAIN, SERVICE_LEARN, _learn_service,schema=SERVICE_SCHEMA)
-
     _LOGGER.debug("setup done")
 
     return True
-
-def _learn_service(service):
-    device = service.data.get('device')
-    command_name = service.data.get('commandName')
-    if(device != "None" and device != ""):
-        hass.data[DATA_BROADLINK].learn(device, command_name)
 
 
 class BroadlinkRM2(object):
