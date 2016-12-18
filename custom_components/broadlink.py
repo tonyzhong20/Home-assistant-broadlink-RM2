@@ -19,7 +19,9 @@ DATA_BROADLINK = 'broadlink'
 
 SERVICE_LEARN = 'broadlink_learn'
 SERVICE_SCHEMA = vol.Schema({
-    vol.Required('commandName'): cv.string,
+    vol.Required('device'): cv.string,
+    vol.Optional('commandName'): cv.string,
+    vol.Optional('count'): cv.string,
 })
 
 _LOGGER = logging.getLogger(__name__)
@@ -31,7 +33,6 @@ def setup(hass, config):
     host = conf.get(CONF_HOST)
     port = conf.get(CONF_PORT)
     mac  = conf.get("mac")
-    
     conf_file = hass.config.path('broadlink.conf')
 
     hass.data[DATA_BROADLINK]  = BroadlinkRM2(host,port,mac,conf_file)
@@ -48,9 +49,10 @@ def setup(hass, config):
     return True
 
 def _learn_service(service):
+    device = service.data.get('device')
     command_name = service.data.get('commandName')
-    if(command_name != None and command_name !=""):
-        hass.data[DATA_BROADLINK].learn(command_name)
+    if(device != "None" and device != ""):
+        hass.data[DATA_BROADLINK].learn(device, command_name)
 
 
 class BroadlinkRM2(object):
@@ -87,7 +89,7 @@ class BroadlinkRM2(object):
                 devices.extend([device])
         return devices
 
-    def learn(self, command_name):
+    def learn(self, device, command_name=None):
         import codecs
         import time
         import os.path
@@ -100,14 +102,24 @@ class BroadlinkRM2(object):
             if (ir_packet != None and codecs.encode(ir_packet,"hex") != "4e6f6e65"):
                 break
 
-        self._commands[command_name] = codecs.encode(ir_packet,"hex").decode("utf-8")
+        command = self.generateCommand(device,command_name)
+
+        self._commands[command] = codecs.encode(ir_packet,"hex").decode("utf-8")
 
         commands_file = open(self._conf_file, "w")
         commands_file.write(json.dumps(self._commands))
         commands_file.close()
 
-    def call(self, command_name,isSwitch=False):
+    def call(self, device, command_name=None):
         import codecs
-        if(isSwitch):
-            command_name = '{}_{}'.format(SWITCH_PREFIX,command_name)
-        self._device.send_data(codecs.decode(self._commands[command_name],"hex"))
+        command = self.generateCommand(device,command_name)
+        self._device.send_data(codecs.decode(self._commands[command],"hex"))
+
+    def generateCommand(self, device, command_name=None):
+        command = device.replace(" ","_")
+        if(command_name != None and command_name != ""):
+            command_name = command_name.replace(" ","_")
+            command = '{}_{}'.format(command,command_name)
+        else:
+            command = '{}_{}'.format(SWITCH_PREFIX,command)
+        return command

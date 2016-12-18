@@ -55,4 +55,4 @@ class BroadlinkSwitch(SwitchDevice):
         self._state = True
 
     def call(self):
-        self.device.call(self._name,True)
+        self.device.call(self._name)

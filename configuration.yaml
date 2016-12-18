@@ -54,8 +54,21 @@ sensor:
 switch:
   - platform: broadlink
 
-# remote:
-#   - platform: broadlink
-#     host: '192.168.1.126'
-#     port: 80
-#     mac : '59f9ee0d43b4'
+remote:
+  - platform: broadlink
+
+# voice
+alexa:
+  intents:
+    RemoteRemoteIntent:
+      action:
+        service_template: remote.broadlink_{{ Action | default('call') }}
+        data_template:
+          commandName: "{{Command}}"
+          device: "{{Device}}"
+          count: "{{Count}}"
+      speech:
+        type: plaintext
+        text: OK {{Device}} {{Command}} Done
+
+
